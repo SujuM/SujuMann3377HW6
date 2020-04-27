@@ -13,6 +13,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <inttypes.h> 	//For the fixed width types like uint32_t
+#include <string.h>
 #include "cdk.h"
 #include "binfile.h"
 
@@ -36,6 +38,10 @@ int main()
   int			boxWidths[MATRIX_WIDTH+1] = {BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH};
   int			boxTypes[MATRIX_WIDTH+1] = {vMIXED, vMIXED, vMIXED, vMIXED};
 
+  char buffer32[32];
+  char buffer64[64];
+  char mystr[128];
+
   BinaryFileHeader *myHeader = new BinaryFileHeader();
   ifstream binInfile ("/scratch/perkins/cs3377.bin", ios::in | ios::binary);
 
@@ -43,8 +49,6 @@ int main()
     cout << "Cannot open the bin file." << endl;
     return 1;
   }
-
-  binInfile.read((char *) myHeader, sizeof(BinaryFileHeader));
 
   /*
    * Initialize the Cdk screen.
@@ -76,8 +80,28 @@ int main()
   /*
    * Dipslay a message
    */
-  setCDKMatrixCell(myMatrix, 1, 1, "Magic: ");
-  setCDKMatrixCell(myMatrix, 2, 2, "Test12344  22 Message");
+  binInfile.read((char *) myHeader, sizeof(BinaryFileHeader));
+
+  snprintf(buffer32, sizeof(buffer32), "%" PRIx32, myHeader->magicNumber);
+  strcpy (mystr, "Magic: 0x");
+  strcat (mystr, buffer32);
+  
+  setCDKMatrixCell(myMatrix, 1, 1, mystr);
+
+  snprintf(buffer32, sizeof(buffer32), "%" PRIu32, myHeader->versionNumber);
+  strcpy (mystr, "Version: ");
+  strcat (mystr, buffer32);
+  
+  setCDKMatrixCell(myMatrix, 1, 2, mystr);
+ 
+  snprintf(buffer64, sizeof(buffer64), "%" PRIu64, myHeader->numRecords);
+  strcpy (mystr, "NumRecords: ");
+  strcat (mystr, buffer64);  
+  
+  setCDKMatrixCell(myMatrix, 1, 3, mystr);
+  
+  binInfile.close();
+
   drawCDKMatrix(myMatrix, true);    /* required  */
 
   /* so we can see results */
