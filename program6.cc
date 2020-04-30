@@ -28,7 +28,7 @@ int main()
   char buffer32[32];
   char buffer64[64];
   char mystr[128];
-  string bfcontents[11];
+  string bfcontents[11];	//This array will have all the neccessary contents from the binary file.
 
   try {
 
@@ -46,8 +46,8 @@ int main()
   //Read the header of the binary file.
   binInfile.read((char *) myHeader, sizeof(BinaryFileHeader));
 
-  //Process the header record contents to display on the matrix
-  snprintf(buffer32, sizeof(buffer32), "%" PRIx32, myHeader->magicNumber);
+  //Process the header record contents to display on the matrix. Hex value.
+  snprintf(buffer32, sizeof(buffer32), "%X", myHeader->magicNumber);
   strcpy (mystr, "Magic: 0x");
   strcat (mystr, buffer32);
   //Set the cell with processed string.
@@ -75,7 +75,7 @@ int main()
  	bfcontents[i + 3] = mystr;
  	
 	snprintf(buffer32, sizeof(buffer32), "%s", myRecord->stringBuffer);
-  	strcpy (mystr, "strlen: ");
+  	strcpy (mystr, "");
   	strcat (mystr, buffer32);
 	
 	bfcontents[i + 7] = mystr;
