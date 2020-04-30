@@ -15,33 +15,18 @@
 #include <fstream>
 #include <inttypes.h> 	//For the fixed width types like uint32_t
 #include <string.h> 	//strcpy(), strcat().
-#include "cdk.h"
+#include "displayMatrix.h"
 #include "binfile.h"
-
-#define MATRIX_WIDTH 5
-#define MATRIX_HEIGHT 3
-#define BOX_WIDTH 20	//Make sure the width are wide enough.
-#define MATRIX_NAME_STRING "Binary File Contents"
 
 using namespace std;
 
-
 int main()
 {
-
-  WINDOW	*window;
-  CDKSCREEN	*cdkscreen;
-  CDKMATRIX     *myMatrix;           // CDK Screen Matrix
-
-  const char 		*rowTitles[MATRIX_WIDTH+1] = {"R0", "a", "b", "c", "d", "e"};
-  const char 		*columnTitles[MATRIX_HEIGHT+1] = {"C0", "a", "b", "c"};
-  int			boxWidths[MATRIX_WIDTH+1] = {BOX_WIDTH, BOX_WIDTH, BOX_WIDTH, BOX_WIDTH};
-  int			boxTypes[MATRIX_WIDTH+1] = {vMIXED, vMIXED, vMIXED, vMIXED};
-
 //Those are the buffers to process strings when we display the contents on the Matrix.
   char buffer32[32];
   char buffer64[64];
   char mystr[128];
+  string bfcontents[11];
 
   BinaryFileHeader *myHeader = new BinaryFileHeader();
   BinaryFileRecord *myRecord = new BinaryFileRecord();
@@ -54,38 +39,6 @@ int main()
     return 1;
   }
 
-  /*
-   * Initialize the Cdk screen.
-   * Make sure the putty terminal is large enough
-   */
-
-  window = initscr();
-  cdkscreen = initCDKScreen(window);
-
-  /* Start CDK Colors */
-  initCDKColor();
-
-  /*
-   * Create the matrix.  Need to manually cast (const char**) to (char **)
-  */
-  myMatrix = newCDKMatrix(cdkscreen, CENTER, CENTER, MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_WIDTH, MATRIX_HEIGHT,
-			  MATRIX_NAME_STRING, (char **) rowTitles, (char **) columnTitles, boxWidths,
-				     boxTypes, 1, 1, ' ', ROW, true, true, false);
-
-//Error checking
-  if (myMatrix ==NULL)
-    {
-      printf("Error creating Matrix\n");
-      _exit(1);
-    }
-
-  /* Display the Matrix */
-  drawCDKMatrix(myMatrix, true);
-
-  /*
-   * Dipslay a message
-   */
-
   //Read the header of the binary file.
   binInfile.read((char *) myHeader, sizeof(BinaryFileHeader));
 
@@ -94,19 +47,17 @@ int main()
   strcpy (mystr, "Magic: 0x");
   strcat (mystr, buffer32);
   //Set the cell with processed string.
-  setCDKMatrixCell(myMatrix, 1, 1, mystr);
+  bfcontents[0] = mystr;
 
   snprintf(buffer32, sizeof(buffer32), "%" PRIu32, myHeader->versionNumber);
   strcpy (mystr, "Version: ");
   strcat (mystr, buffer32);
+  bfcontents[1] = mystr;
   
-  setCDKMatrixCell(myMatrix, 1, 2, mystr);
- 
   snprintf(buffer64, sizeof(buffer64), "%" PRIu64, myHeader->numRecords);
   strcpy (mystr, "NumRecords: ");
   strcat (mystr, buffer64);  
-  
-  setCDKMatrixCell(myMatrix, 1, 3, mystr);
+  bfcontents[2] = mystr;
   
   //Disply up to the first 4 records in the CDK Matrix
   for (int i = 0; i < 4; i++) {
@@ -117,19 +68,20 @@ int main()
   	strcpy (mystr, "strlen: ");
   	strcat (mystr, buffer32);
   //Set the cell with processed string.
-  	setCDKMatrixCell(myMatrix,i+2, 1, mystr);
-  	setCDKMatrixCell(myMatrix,i+2, 2, (char *) myRecord->stringBuffer);
+ 	bfcontents[i + 3] = mystr;
+ 	
+	snprintf(buffer32, sizeof(buffer32), "%s", myRecord->stringBuffer);
+  	strcpy (mystr, "strlen: ");
+  	strcat (mystr, buffer32);
+	
+	bfcontents[i + 7] = mystr;
   }
-
 
 //Close the binary file that we opened.
   binInfile.close();
 
-  drawCDKMatrix(myMatrix, true);    /* required  */
+  //Call displayMatrix to create a matrix and display the contents of the binary file on it.
+  displayMatrix(bfcontents);
 
-  /* so we can see results */
-  sleep (10);
-
-  // Cleanup screen
-  endCDK();
+  return 0;
   }

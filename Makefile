@@ -20,7 +20,7 @@ PROJECTNAME = MYPROGRAM6
 EXECFILE = program6
 
 # Auto include all .cc files
-SOURCES := program6.cc # $(wildcard *.cc)
+SOURCES := program6.cc displayMatrix.cc # $(wildcard *.cc)
 OBJS = $(SOURCES:.cc=.o)
 
 # Rely on implicit rules for compilation
