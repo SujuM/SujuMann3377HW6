@@ -91,6 +91,6 @@ void displayMatrix(string *contents)
   // Cleanup screen
   endCDK();
 
-  cout << "Done" << endl;
+  cout << "You typed a character. Exiting the program" << endl;
 
   };

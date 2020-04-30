@@ -8,15 +8,17 @@
  * Copyright	2020, All Rights Reserved
  *
  * Description
- * 	This program reads the supplied binary file and display the results in a CDK window.
+ * 	This program reads the supplied binary file 
+ * 		,and call displayMatrix() to display the binary file contents in a CDK window
+ * 				by passing string array as an argument.
  * */
 
 #include <iostream>
 #include <fstream>
-#include <inttypes.h> 	//For the fixed width types like uint32_t
-#include <string.h> 	//strcpy(), strcat().
-#include "displayMatrix.h"
-#include "binfile.h"
+#include <inttypes.h> 		//For the fixed width types like uint32_t
+#include <string.h> 		//strcpy(), strcat().
+#include "displayMatrix.h"	
+#include "binfile.h"		//Includes class definitions.
 
 using namespace std;
 
@@ -27,6 +29,8 @@ int main()
   char buffer64[64];
   char mystr[128];
   string bfcontents[11];
+
+  try {
 
   BinaryFileHeader *myHeader = new BinaryFileHeader();
   BinaryFileRecord *myRecord = new BinaryFileRecord();
@@ -59,7 +63,7 @@ int main()
   strcat (mystr, buffer64);  
   bfcontents[2] = mystr;
   
-  //Disply up to the first 4 records in the CDK Matrix
+  //Get the first 4 records in the binary file.
   for (int i = 0; i < 4; i++) {
   //Read the record of the binary file contents.
   	binInfile.read((char *) myRecord, sizeof(BinaryFileRecord));
@@ -67,7 +71,7 @@ int main()
  	snprintf(buffer32, sizeof(buffer32), "%" PRIu8, myRecord->strLength);
   	strcpy (mystr, "strlen: ");
   	strcat (mystr, buffer32);
-  //Set the cell with processed string.
+  //Assign the processed string to one of the element in the array bfcontents.
  	bfcontents[i + 3] = mystr;
  	
 	snprintf(buffer32, sizeof(buffer32), "%s", myRecord->stringBuffer);
@@ -82,6 +86,11 @@ int main()
 
   //Call displayMatrix to create a matrix and display the contents of the binary file on it.
   displayMatrix(bfcontents);
+
+  }
+  catch (bad_alloc& bad){
+  	cerr << "Failed to allocating memory: " << bad.what() << endl;
+  }
 
   return 0;
   }
